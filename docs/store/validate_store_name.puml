@@ -1,0 +1,27 @@
+@startuml
+participant FrontEnd
+participant API
+database DB
+
+FrontEnd -> API: Create new store
+alt Successful case
+
+note right: Store name required
+API -> DB: Validate store name
+alt Successful case
+DB -> API: ok
+else Failure
+DB --> API: Store name already in use
+else Error
+DB --> API: Error
+end
+API -> FrontEnd: Store name valid
+FrontEnd -> FrontEnd: Show new store form
+else Failure
+API --> FrontEnd: Store name already in use
+else Error
+API --> FrontEnd: Error
+end
+
+
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+participant FrontEnd
+participant API
+database DB
+
+FrontEnd -> API: Submit new store settings
+alt Successful case
+
+ref over API, DB : validate_user_has_store
+
+API -> API: Create new store settings
+
+API -> API: Validate settings
+alt Successful case
+DB -> API: ok
+else Error
+DB --> API: Settings not valid
+end
+
+API -> DB: Save settings
+alt Successful case
+DB -> API: ok
+else Error
+DB --> API: Error
+end
+
+API -> FrontEnd: Setting applied
+FrontEnd -> FrontEnd: Show orders menu
+
+else Error
+API --> FrontEnd: Error
+end
+
+
+@enduml

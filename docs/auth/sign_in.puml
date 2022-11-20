@@ -1,0 +1,39 @@
+@startuml
+participant FrontEnd
+participant API
+database DB
+
+alt Successful case
+FrontEnd -> API: Register new user
+alt Successful case
+API -> DB: Check email existence
+alt Successful case
+DB --> API: ok
+else Failure
+DB --> API: email already exists
+else Error
+DB --> API: Error
+end
+
+API -> API: create user data
+API -> DB: save user data
+alt Successful case
+DB --> API: ok
+else Error
+DB --> API: Error
+end
+
+API -> API: generate user access token
+API -> FrontEnd: Access token
+FrontEnd -> FrontEnd: Show create store menu
+else Failure
+API --> FrontEnd: User already exists
+else Error
+API --> FrontEnd: Return error
+end
+
+
+
+
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+participant FrontEnd
+participant API
+database DB
+
+
+FrontEnd -> API: Validate if user has store
+alt Successful case
+
+alt Successful case
+API -> DB: Check if user has store
+alt Successful case
+DB -> API: ok
+else Failure
+DB --> API: User already has a store
+else Error
+DB --> API: Error
+end
+
+API -> FrontEnd: Enable user to create store
+
+else Failure
+API --> FrontEnd: User already has a store
+else Error
+API --> FrontEnd: Error
+end
+
+
+@enduml

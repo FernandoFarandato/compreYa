@@ -1,0 +1,37 @@
+@startuml
+
+participant FrontEnd
+participant API
+database DB
+
+alt Successful case
+FrontEnd -> API: Log in user
+alt Successful case
+API -> DB: Check email existence
+alt Successful case
+DB --> API: ok
+else Failure
+DB --> API: email does not exists
+else Error
+DB --> API: Error
+end
+
+API -> DB: Get user credentials
+alt Successful case
+DB --> API: credentials
+else Error
+DB --> API: Error
+end
+
+API -> API: validate credentials
+API -> FrontEnd: Access token
+FrontEnd -> FrontEnd: Show orders menu
+else Failure
+API --> FrontEnd: Credentials not valid
+else Error
+API --> FrontEnd: Return error
+end
+
+
+
+@enduml
