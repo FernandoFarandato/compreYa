@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"compreYa/src/app"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	app.Start()
 }
