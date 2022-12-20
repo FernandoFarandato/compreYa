@@ -10,8 +10,12 @@ func configureURLMapping(router *gin.Engine, handlers *dependencies.HandlerConta
 	authGroup.POST("/signup", handlers.SignUp.Handle)
 	authGroup.POST("/login", handlers.Login.Handle)
 	authGroup.GET("/validate", handlers.AuthValidation.Handle)
+	authGroup.POST("/recover_password", handlers.AuthValidation.Handle)
 
-	storeGroup := router.Group("compreYa/store")
-	storeGroup.GET("/create", handlers.AuthValidation.Handle, handlers.CreateStore.Handle)
+	userInfoGroup := router.Group("compreYa/user")
+	userInfoGroup.POST("/change/password", handlers.Login.Handle)
+
+	storeGroup := router.Group("compreYa/store", handlers.AuthValidation.Handle)
+	storeGroup.GET("/create", handlers.CreateStore.Handle)
 	storeGroup.GET("/validate/name", handlers.SignUp.Handle)
 }

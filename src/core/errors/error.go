@@ -53,7 +53,7 @@ func NewInternalServerError(causes []string, messages ...string) *ApiError {
 	if len(messages) > 0 {
 		message = strings.Join(messages, " - ")
 	}
-	return newApiError(http.StatusBadRequest, message, "bad_request", causes)
+	return newApiError(http.StatusBadRequest, message, "internal_server_error", causes)
 }
 
 func NewNotAuthorizeError(causes []string, messages ...string) *ApiError {

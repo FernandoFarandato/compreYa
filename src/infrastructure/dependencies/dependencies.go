@@ -7,9 +7,11 @@ import (
 	"compreYa/src/infrastructure/entrypoints/api"
 	"compreYa/src/infrastructure/entrypoints/api/auth"
 	"compreYa/src/middleware"
+	"compreYa/src/repositories/api/sendgrid"
 	repositories "compreYa/src/repositories/db"
 	"github.com/joho/godotenv"
 	"log"
+	"os"
 )
 
 type HandlerContainer struct {
@@ -34,13 +36,18 @@ func Start() *HandlerContainer {
 		DB: db,
 	}
 
+	sendGridRepository := &sendgrid.Repository{
+		Client: sendgrid.NewSendClient(os.Getenv("EMAIL_SENDGRID_API_KEY")),
+	}
+
 	// use cases
 	signUpUseCase := &usecases.SignUpImpl{
 		AuthRepository: authRepository,
 	}
 
 	logInUseCase := &usecases.LogInImpl{
-		AuthRepository: authRepository,
+		AuthRepository:    authRepository,
+		EmailNotification: sendGridRepository,
 	}
 
 	// handlers
