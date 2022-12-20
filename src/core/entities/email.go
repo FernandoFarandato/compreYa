@@ -17,8 +17,8 @@ type EmailInformation struct {
 	HtmlBody         *string
 }
 
-func (e *EmailType) String() string {
-	return e.String()
+func (e EmailType) String() string {
+	return string(e)
 }
 
 func NewEmailInformation(userName, subject, recipientAddress string, htmlBody *string) *EmailInformation {
