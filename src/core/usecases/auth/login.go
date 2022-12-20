@@ -18,7 +18,8 @@ type LogIn interface {
 }
 
 type LogInImpl struct {
-	AuthRepository providers.Auth
+	AuthRepository    providers.Auth
+	EmailNotification providers.SendGrid
 }
 
 func (uc *LogInImpl) Execute(c *gin.Context, email, password string) (*string, *errors.ApiError) {
@@ -35,6 +36,11 @@ func (uc *LogInImpl) Execute(c *gin.Context, email, password string) (*string, *
 	}
 
 	token, err := uc.createToken(user)
+	if err != nil {
+		return nil, err
+	}
+
+	err = uc.EmailNotification.SendLoginEmail(user)
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,8 @@ import (
 	"net/http"
 )
 
+const tokenExpirationTime = 3600 * 24 * 15
+
 type LogIn struct {
 	usecases.LogIn
 }
@@ -37,7 +39,7 @@ func (handler *LogIn) handle(c *gin.Context) *errors.ApiError {
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorize", *authToken, 3600*24*15, "", "", false, true)
+	c.SetCookie("Authorize", *authToken, tokenExpirationTime, "", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": fmt.Sprintf("%s", *authToken),
@@ -58,7 +60,6 @@ func (handler *LogIn) getRequest(c *gin.Context) (*contracts.RegistrationData, *
 
 func (handler *LogIn) validateFields(c *gin.Context, request *contracts.RegistrationData) *errors.ApiError {
 	emailValid := utils.ValidateRegex(request.Email, constants.Email)
-	//passwordValid := utils.ValidateRegex(request.Password, constants.Password)
 
 	if !(emailValid) {
 		return errors.NewBadRequest(nil, errors.CredentialsNotValid)
