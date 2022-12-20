@@ -95,3 +95,20 @@ func (a *Auth) CheckEmailExistence(c *gin.Context, email string) (bool, *errors.
 
 	return exist == 1, nil
 }
+
+func (a *Auth) InsertPasswordRecoveryToken(c *gin.Context, user_id, expireDateToken int64, token string) *errors.ApiError {
+	const query = "INSERT INTO compreYa.password_reset_tokens (user_id, token, token_expiry) VALUES (?, ?, ?)"
+
+	var args []interface{}
+	args = append(args, user_id)
+	args = append(args, token)
+	args = append(args, expireDateToken)
+
+	_, err := a.DB.Query(query, args...)
+	if err != nil {
+		messageError := errors.DataBaseError
+		return errors.NewInternalServerError(nil, messageError)
+	}
+
+	return nil
+}

@@ -7,18 +7,20 @@ import (
 	"compreYa/src/infrastructure/entrypoints/api"
 	"compreYa/src/infrastructure/entrypoints/api/auth"
 	"compreYa/src/middleware"
-	"compreYa/src/repositories/api/sendgrid"
+	sendgridRepository "compreYa/src/repositories/api/sendgrid"
 	repositories "compreYa/src/repositories/db"
 	"github.com/joho/godotenv"
+	"github.com/sendgrid/sendgrid-go"
 	"log"
 	"os"
 )
 
 type HandlerContainer struct {
-	SignUp         entrypoints.Handler
-	Login          entrypoints.Handler
-	AuthValidation entrypoints.Handler
-	CreateStore    entrypoints.Handler
+	SignUp                 entrypoints.Handler
+	Login                  entrypoints.Handler
+	AuthValidation         entrypoints.Handler
+	RecoverPasswordRequest entrypoints.Handler
+	CreateStore            entrypoints.Handler
 }
 
 func Start() *HandlerContainer {
@@ -36,8 +38,9 @@ func Start() *HandlerContainer {
 		DB: db,
 	}
 
-	sendGridRepository := &sendgrid.Repository{
-		Client: sendgrid.NewSendClient(os.Getenv("EMAIL_SENDGRID_API_KEY")),
+	sendGridRepository := &sendgridRepository.Repository{
+		Client:  sendgrid.NewSendClient(os.Getenv("EMAIL_SENDGRID_API_KEY")),
+		BaseURL: os.Getenv("BASE_URL"),
 	}
 
 	// use cases
@@ -50,6 +53,13 @@ func Start() *HandlerContainer {
 		EmailNotification: sendGridRepository,
 	}
 
+	recoverPasswordRequestUseCase := &usecases.PasswordRecoveryImpl{
+		AuthRepository: authRepository,
+		Email:          sendGridRepository,
+	}
+
+	// validate email sub usecase?
+
 	// handlers
 	handlers := HandlerContainer{}
 
@@ -59,6 +69,10 @@ func Start() *HandlerContainer {
 
 	handlers.Login = &auth.LogIn{
 		LogIn: logInUseCase,
+	}
+
+	handlers.RecoverPasswordRequest = &auth.RecoverPasswordRequest{
+		ValidateRecoverPasswordRequest: recoverPasswordRequestUseCase,
 	}
 
 	handlers.AuthValidation = &middleware.Validation{}

@@ -2,8 +2,10 @@ package sendgrid
 
 import (
 	"bytes"
+	"compreYa/src/core/emails"
 	"compreYa/src/core/entities"
 	"compreYa/src/core/errors"
+	"fmt"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"html/template"
@@ -11,17 +13,44 @@ import (
 	"os"
 )
 
+const (
+	loginNotificationFile  = "src/core/emails/login_notification.html"
+	signUpNotificationFile = "src/core/emails/signup_notification.html"
+	passwordRecoveryFile   = "src/core/emails/recover_password.html"
+)
+
 type Repository struct {
-	Client *sendgrid.Client
+	Client  *sendgrid.Client
+	BaseURL string
 }
 
 func (r *Repository) SendLoginEmail(userData *entities.User) *errors.ApiError {
-	htmlBody, err := r.getHTMLBody(userData)
+	htmlData := emails.NewLoginNotificationData(userData.Email, userData.UserName)
+	htmlBody, err := r.getHTMLBody(htmlData, loginNotificationFile)
 	if err != nil {
 		return nil
 	}
 
 	emailData := entities.NewEmailInformation(userData.UserName, entities.LoginNotification.String(), userData.Email, htmlBody)
+	email := r.getEmail(emailData)
+
+	err = r.sendEmail(email)
+	if err != nil {
+		return errors.NewInternalServerError(nil, errors.SendingEmailError)
+	}
+
+	return nil
+}
+
+func (r *Repository) SendPasswordRecovery(userData *entities.User, token string) *errors.ApiError {
+	link := fmt.Sprintf("%s/compreYa/auth/recover_password/change?recovery_token=%s", r.BaseURL, token)
+	htmlData := emails.NewRecoverPasswordData(link)
+	htmlBody, err := r.getHTMLBody(htmlData, passwordRecoveryFile)
+	if err != nil {
+		return nil
+	}
+
+	emailData := entities.NewEmailInformation(userData.UserName, entities.RecoverPassword.String(), userData.Email, htmlBody)
 	email := r.getEmail(emailData)
 
 	err = r.sendEmail(email)
@@ -40,16 +69,16 @@ func (r *Repository) getEmail(emailData *entities.EmailInformation) *mail.SGMail
 	return email
 }
 
-func (r *Repository) getHTMLBody(userData *entities.User) (*string, *errors.ApiError) {
+func (r *Repository) getHTMLBody(emailData interface{}, htmlFileAddress string) (*string, *errors.ApiError) {
 	var htmlTemplate *template.Template
 
-	htmlTemplate, err := htmlTemplate.ParseFiles("src/core/constants/emails/login_notification.html")
+	htmlTemplate, err := htmlTemplate.ParseFiles(htmlFileAddress)
 	if err != nil {
 		return nil, errors.NewInternalServerError(nil, errors.CreatingEmailError)
 	}
 
 	buffer := new(bytes.Buffer)
-	err = htmlTemplate.Execute(buffer, userData)
+	err = htmlTemplate.Execute(buffer, emailData)
 	if err != nil {
 		return nil, errors.NewInternalServerError(nil, errors.CreatingEmailError)
 	}

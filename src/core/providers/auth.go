@@ -11,4 +11,5 @@ type Auth interface {
 	CheckEmailExistence(c *gin.Context, email string) (bool, *errors.ApiError)
 	GetUserByEmail(c *gin.Context, email string) (*entities.User, *errors.ApiError)
 	GetUserById(c *gin.Context, id int64) (*entities.User, *errors.ApiError)
+	InsertPasswordRecoveryToken(c *gin.Context, userId, expireDateToken int64, token string) *errors.ApiError
 }

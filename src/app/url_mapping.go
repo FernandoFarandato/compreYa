@@ -10,7 +10,8 @@ func configureURLMapping(router *gin.Engine, handlers *dependencies.HandlerConta
 	authGroup.POST("/signup", handlers.SignUp.Handle)
 	authGroup.POST("/login", handlers.Login.Handle)
 	authGroup.GET("/validate", handlers.AuthValidation.Handle)
-	authGroup.POST("/recover_password", handlers.AuthValidation.Handle)
+	authGroup.POST("/recover_password/request", handlers.RecoverPasswordRequest.Handle)
+	authGroup.POST("/recover_password/change", handlers.AuthValidation.Handle)
 
 	userInfoGroup := router.Group("compreYa/user")
 	userInfoGroup.POST("/change/password", handlers.Login.Handle)

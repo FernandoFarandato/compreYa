@@ -12,17 +12,15 @@ import (
 	"net/http"
 )
 
-const tokenExpirationTime = 3600 * 24 * 15
-
-type LogIn struct {
-	LogIn usecases.LogIn
+type RecoverPasswordRequest struct {
+	ValidateRecoverPasswordRequest usecases.PasswordRecovery
 }
 
-func (handler *LogIn) Handle(c *gin.Context) {
+func (handler *RecoverPasswordRequest) Handle(c *gin.Context) {
 	entrypoints.ErrorWrapper(handler.handle, c)
 }
 
-func (handler *LogIn) handle(c *gin.Context) *errors.ApiError {
+func (handler *RecoverPasswordRequest) handle(c *gin.Context) *errors.ApiError {
 	request, err := handler.getRequest(c)
 	if err != nil {
 		return err
@@ -33,23 +31,21 @@ func (handler *LogIn) handle(c *gin.Context) *errors.ApiError {
 		return err
 	}
 
-	authToken, err := handler.LogIn.Execute(c, request.Email, request.Password)
+	err = handler.ValidateRecoverPasswordRequest.ValidateRequest(c, request.Email)
 	if err != nil {
 		return err
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorize", *authToken, tokenExpirationTime, "", "", false, true)
-
+	// show error only for system errors not if email not_found
 	c.JSON(http.StatusOK, gin.H{
-		"access_token": fmt.Sprintf("%s", *authToken),
+		"access_token": fmt.Sprintf("%s", "ok"),
 	})
 
 	return nil
 }
 
-func (handler *LogIn) getRequest(c *gin.Context) (*contracts.RegistrationData, *errors.ApiError) {
-	var request *contracts.RegistrationData
+func (handler *RecoverPasswordRequest) getRequest(c *gin.Context) (*contracts.RecoverPasswordRequest, *errors.ApiError) {
+	var request *contracts.RecoverPasswordRequest
 	err := c.Bind(&request)
 	if err != nil {
 		return nil, errors.NewBadRequest(nil, errors.BindingError)
@@ -58,7 +54,7 @@ func (handler *LogIn) getRequest(c *gin.Context) (*contracts.RegistrationData, *
 	return request, nil
 }
 
-func (handler *LogIn) validateFields(c *gin.Context, request *contracts.RegistrationData) *errors.ApiError {
+func (handler *RecoverPasswordRequest) validateFields(c *gin.Context, request *contracts.RecoverPasswordRequest) *errors.ApiError {
 	emailValid := utils.ValidateRegex(request.Email, constants.Email)
 
 	if !(emailValid) {
