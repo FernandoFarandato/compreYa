@@ -12,6 +12,7 @@ import (
 
 type PasswordRecovery interface {
 	ValidateRequest(c *gin.Context, email string) *errors.ApiError
+	ChangePassword(c *gin.Context, userID int64, newPassword, recoveryToken string) *errors.ApiError
 }
 
 type PasswordRecoveryImpl struct {
@@ -30,6 +31,10 @@ func (uc *PasswordRecoveryImpl) ValidateRequest(c *gin.Context, email string) *e
 		return err
 	}
 
+	print("start")
+	print(recoveryToken)
+	print("end")
+
 	hashRecoveryToken, err := uc.encryptToken(recoveryToken)
 	expireDateToken := time.Now().Add(time.Minute * 30).Unix()
 
@@ -46,6 +51,36 @@ func (uc *PasswordRecoveryImpl) ValidateRequest(c *gin.Context, email string) *e
 	return nil
 }
 
+func (uc *PasswordRecoveryImpl) ChangePassword(c *gin.Context, userID int64, newPassword, recoveryToken string) *errors.ApiError {
+	hashRecoveryToken, err := uc.encryptToken(recoveryToken)
+	if err != nil {
+		return err
+	}
+
+	isValid, err := uc.AuthRepository.CheckPasswordTokenRecovery(c, userID, string(hashRecoveryToken))
+	if err != nil {
+		return err
+	}
+	if !isValid {
+		// return not auth
+	}
+
+	hashPassword, err := uc.encryptPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	err = uc.AuthRepository.UpdatePassword(c, userID, string(hashPassword))
+	if err != nil {
+		return err
+	}
+
+	// Send password changed notification
+	//err = uc.Email.SendPasswordRecovery(user, recoveryToken)
+
+	return nil
+}
+
 func (uc *PasswordRecoveryImpl) generateRandomToken(length int) string {
 	b := make([]byte, length)
 	if _, err := rand.Read(b); err != nil {
@@ -58,6 +93,15 @@ func (uc *PasswordRecoveryImpl) encryptToken(token string) ([]byte, *errors.ApiE
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(token), 10)
 	if err != nil {
 		return nil, errors.NewInternalServerError(nil, "Error hashing token")
+	}
+
+	return hashPassword, nil
+}
+
+func (uc *PasswordRecoveryImpl) encryptPassword(password string) ([]byte, *errors.ApiError) {
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if err != nil {
+		return nil, errors.NewInternalServerError(nil, "Error hashing password")
 	}
 
 	return hashPassword, nil
