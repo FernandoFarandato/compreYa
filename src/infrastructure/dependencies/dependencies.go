@@ -20,7 +20,6 @@ type HandlerContainer struct {
 	Login                  entrypoints.Handler
 	AuthValidation         entrypoints.Handler
 	RecoverPasswordRequest entrypoints.Handler
-	RecoverPasswordChange  entrypoints.Handler
 	CreateStore            entrypoints.Handler
 }
 
@@ -73,11 +72,7 @@ func Start() *HandlerContainer {
 	}
 
 	handlers.RecoverPasswordRequest = &auth.RecoverPasswordRequest{
-		RecoverPassword: recoverPasswordRequestUseCase,
-	}
-
-	handlers.RecoverPasswordChange = &auth.RecoverPasswordChange{
-		RecoverPassword: recoverPasswordRequestUseCase,
+		ValidateRecoverPasswordRequest: recoverPasswordRequestUseCase,
 	}
 
 	handlers.AuthValidation = &middleware.Validation{}

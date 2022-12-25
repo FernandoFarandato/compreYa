@@ -13,7 +13,7 @@ import (
 )
 
 type RecoverPasswordRequest struct {
-	RecoverPassword usecases.PasswordRecovery
+	ValidateRecoverPasswordRequest usecases.PasswordRecovery
 }
 
 func (handler *RecoverPasswordRequest) Handle(c *gin.Context) {
@@ -31,7 +31,7 @@ func (handler *RecoverPasswordRequest) handle(c *gin.Context) *errors.ApiError {
 		return err
 	}
 
-	err = handler.RecoverPassword.ValidateRequest(c, request.Email)
+	err = handler.ValidateRecoverPasswordRequest.ValidateRequest(c, request.Email)
 	if err != nil {
 		return err
 	}
