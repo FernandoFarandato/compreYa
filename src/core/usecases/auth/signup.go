@@ -3,9 +3,9 @@ package usecases
 import (
 	"compreYa/src/core/errors"
 	"compreYa/src/core/providers"
+	"compreYa/src/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type SignUp interface {
@@ -25,7 +25,7 @@ func (uc *SignUpImpl) Execute(c *gin.Context, email, password string) *errors.Ap
 		return err
 	}
 
-	hashPassword, err := uc.encryptPassword(password)
+	hashPassword, err := utils.EncryptString(password)
 	if err != nil {
 		return err
 	}
@@ -37,13 +37,4 @@ func (uc *SignUpImpl) Execute(c *gin.Context, email, password string) *errors.Ap
 	}
 
 	return nil
-}
-
-func (uc *SignUpImpl) encryptPassword(password string) ([]byte, *errors.ApiError) {
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return nil, errors.NewInternalServerError(nil, "Error hashing password")
-	}
-
-	return hashPassword, nil
 }

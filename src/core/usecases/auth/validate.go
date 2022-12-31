@@ -40,7 +40,6 @@ func (uc *ValidateImpl) ValidateToken(c *gin.Context, tokenString *string) (*int
 
 		userID = claims["sub"].(int64)
 	} else {
-
 		return nil, errors.NewNotAuthorizeError(nil, "")
 	}
 

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"strings"
+	"time"
 )
 
 type Auth struct {
@@ -103,6 +104,58 @@ func (a *Auth) InsertPasswordRecoveryToken(c *gin.Context, user_id, expireDateTo
 	args = append(args, user_id)
 	args = append(args, token)
 	args = append(args, expireDateToken)
+
+	_, err := a.DB.Query(query, args...)
+	if err != nil {
+		messageError := errors.DataBaseError
+		return errors.NewInternalServerError(nil, messageError)
+	}
+
+	return nil
+}
+
+func (a *Auth) GetPasswordTokenRecovery(c *gin.Context, userID int64) (*string, *errors.ApiError) {
+	const query = "SELECT token FROM password_reset_tokens WHERE user_id = ? AND token_expiry > ? ORDER BY token_expiry LIMIT 1"
+
+	var token string
+	var args []interface{}
+	args = append(args, userID)
+	args = append(args, time.Now().Unix())
+
+	rows, err := a.DB.Query(query, args...)
+	if err != nil {
+		return nil, errors.NewInternalServerError(nil, errors.DataBaseError)
+	}
+
+	rows.Next()
+	err = rows.Scan(&token)
+	if err != nil {
+		return nil, errors.NewInternalServerError(nil, errors.DataBaseError)
+	}
+
+	return &token, nil
+}
+
+func (a *Auth) CleanRecoveryTokens(c *gin.Context, userId int64) *errors.ApiError {
+	const query = "DELETE FROM password_reset_tokens  WHERE user_id = ?"
+
+	var args []interface{}
+	args = append(args, userId)
+
+	_, err := a.DB.Query(query, args...)
+	if err != nil {
+		messageError := errors.DataBaseError
+		return errors.NewInternalServerError(nil, messageError)
+	}
+
+	return nil
+}
+func (a *Auth) UpdatePassword(c *gin.Context, userId int64, password string) *errors.ApiError {
+	const query = "UPDATE users SET password = ? WHERE id = ?"
+
+	var args []interface{}
+	args = append(args, password)
+	args = append(args, userId)
 
 	_, err := a.DB.Query(query, args...)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 )
 
 type RecoverPasswordRequest struct {
-	ValidateRecoverPasswordRequest usecases.PasswordRecovery
+	RecoverPassword usecases.PasswordRecovery
 }
 
 func (handler *RecoverPasswordRequest) Handle(c *gin.Context) {
@@ -31,14 +31,14 @@ func (handler *RecoverPasswordRequest) handle(c *gin.Context) *errors.ApiError {
 		return err
 	}
 
-	err = handler.ValidateRecoverPasswordRequest.ValidateRequest(c, request.Email)
+	err = handler.RecoverPassword.ValidateRequest(c, request.Email)
 	if err != nil {
 		return err
 	}
 
 	// show error only for system errors not if email not_found
 	c.JSON(http.StatusOK, gin.H{
-		"access_token": fmt.Sprintf("%s", "ok"),
+		"status": fmt.Sprintf("%s", "ok"),
 	})
 
 	return nil
