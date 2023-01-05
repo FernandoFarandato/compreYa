@@ -2,10 +2,11 @@ package dependencies
 
 import (
 	"compreYa/src/config/database"
-	usecases "compreYa/src/core/usecases/auth"
+	usecasesAuth "compreYa/src/core/usecases/auth"
+	usecasesStore "compreYa/src/core/usecases/store"
 	"compreYa/src/infrastructure/entrypoints"
-	"compreYa/src/infrastructure/entrypoints/api"
-	"compreYa/src/infrastructure/entrypoints/api/auth"
+	entrypointsAuth "compreYa/src/infrastructure/entrypoints/api/auth"
+	entrypointsStore "compreYa/src/infrastructure/entrypoints/api/store"
 	"compreYa/src/middleware"
 	sendgridRepository "compreYa/src/repositories/api/sendgrid"
 	repositories "compreYa/src/repositories/db"
@@ -39,24 +40,32 @@ func Start() *HandlerContainer {
 		DB: db,
 	}
 
+	storeRepository := &repositories.Store{
+		DB: db,
+	}
+
 	sendGridRepository := &sendgridRepository.Repository{
 		Client:  sendgrid.NewSendClient(os.Getenv("EMAIL_SENDGRID_API_KEY")),
 		BaseURL: os.Getenv("BASE_URL"),
 	}
 
 	// use cases
-	signUpUseCase := &usecases.SignUpImpl{
+	signUpUseCase := &usecasesAuth.SignUpImpl{
 		AuthRepository: authRepository,
 	}
 
-	logInUseCase := &usecases.LogInImpl{
+	logInUseCase := &usecasesAuth.LogInImpl{
 		AuthRepository:    authRepository,
 		EmailNotification: sendGridRepository,
 	}
 
-	recoverPasswordRequestUseCase := &usecases.PasswordRecoveryImpl{
+	recoverPasswordRequestUseCase := &usecasesAuth.PasswordRecoveryImpl{
 		AuthRepository: authRepository,
 		Email:          sendGridRepository,
+	}
+
+	createStoreUseCase := &usecasesStore.CreateStoreImpl{
+		StoreRepository: storeRepository,
 	}
 
 	// validate email sub usecase?
@@ -64,25 +73,27 @@ func Start() *HandlerContainer {
 	// handlers
 	handlers := HandlerContainer{}
 
-	handlers.SignUp = &auth.SignUp{
+	handlers.SignUp = &entrypointsAuth.SignUp{
 		SignUp: signUpUseCase,
 	}
 
-	handlers.Login = &auth.LogIn{
+	handlers.Login = &entrypointsAuth.LogIn{
 		LogIn: logInUseCase,
 	}
 
-	handlers.RecoverPasswordRequest = &auth.RecoverPasswordRequest{
+	handlers.RecoverPasswordRequest = &entrypointsAuth.RecoverPasswordRequest{
 		RecoverPassword: recoverPasswordRequestUseCase,
 	}
 
-	handlers.RecoverPasswordChange = &auth.RecoverPasswordChange{
+	handlers.RecoverPasswordChange = &entrypointsAuth.RecoverPasswordChange{
 		RecoverPassword: recoverPasswordRequestUseCase,
 	}
 
 	handlers.AuthValidation = &middleware.Validation{}
 
-	handlers.CreateStore = &api.CreateStore{}
+	handlers.CreateStore = &entrypointsStore.CreateStore{
+		CreateStore: createStoreUseCase,
+	}
 
 	return &handlers
 }
