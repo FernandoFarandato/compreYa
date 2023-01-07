@@ -11,8 +11,6 @@ import (
 	"strconv"
 )
 
-const tokenExpirationTime = 3600 * 24 * 15
-
 type CreateStore struct {
 	CreateStore usecases.CreateStore
 }

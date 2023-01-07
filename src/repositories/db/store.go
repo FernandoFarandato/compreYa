@@ -74,22 +74,25 @@ func (s *Store) GetUserStores(c *gin.Context, ownerID int64) (int64, *errors.Api
 	return stores, nil
 }
 
-func (s *Store) ValidateStoreName(c *gin.Context, name string) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+func (s *Store) GetStoresCountByName(c *gin.Context, name string) (int64, *errors.ApiError) {
+	const query = "SELECT COUNT(*) FROM store WHERE name = ?"
 
+	var stores int64
 	var args []interface{}
 	args = append(args, name)
 
-	_, err := s.DB.Query(query, args...)
+	rows, err := s.DB.Query(query, args...)
 	if err != nil {
-		messageError := errors.DataBaseError
-		if strings.Contains(err.Error(), "Duplicate") {
-			messageError = errors.EmailAlreadyRegisterd
-		}
-		return errors.NewInternalServerError(nil, messageError)
+		return 0, errors.NewInternalServerError(nil, errors.DataBaseError)
 	}
 
-	return nil
+	rows.Next()
+	err = rows.Scan(&stores)
+	if err != nil {
+		return 0, errors.NewInternalServerError(nil, errors.DataBaseError)
+	}
+
+	return stores, nil
 }
 
 func (s *Store) ValidateStoreURLName(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {

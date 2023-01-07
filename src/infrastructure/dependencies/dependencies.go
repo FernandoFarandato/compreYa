@@ -23,6 +23,7 @@ type HandlerContainer struct {
 	RecoverPasswordRequest entrypoints.Handler
 	RecoverPasswordChange  entrypoints.Handler
 	CreateStore            entrypoints.Handler
+	ValidateStoreData      entrypoints.Handler
 }
 
 func Start() *HandlerContainer {
@@ -68,6 +69,10 @@ func Start() *HandlerContainer {
 		StoreRepository: storeRepository,
 	}
 
+	validateStoreDataUseCase := &usecasesStore.ValidateStoreDataImpl{
+		StoreRepository: storeRepository,
+	}
+
 	// validate email sub usecase?
 
 	// handlers
@@ -93,6 +98,10 @@ func Start() *HandlerContainer {
 
 	handlers.CreateStore = &entrypointsStore.CreateStore{
 		CreateStore: createStoreUseCase,
+	}
+
+	handlers.ValidateStoreData = &entrypointsStore.ValidateData{
+		ValidateStoreData: validateStoreDataUseCase,
 	}
 
 	return &handlers
