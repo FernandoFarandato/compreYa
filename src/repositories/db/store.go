@@ -137,13 +137,12 @@ func (s *Store) ValidateStoreURLName(c *gin.Context, name, urlName string, owner
 	return nil
 }
 
-func (s *Store) HideStore(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {
-	const query = "INSERT INTO store (name, url_name, owner_id) VALUES (?, ?, ?)"
+func (s *Store) HideStore(c *gin.Context, hidden bool, storeID int64) *errors.ApiError {
+	const query = "UPDATE store SET hidden = ? WHERE id = ?"
 
 	var args []interface{}
-	args = append(args, name)
-	args = append(args, urlName)
-	args = append(args, ownerID)
+	args = append(args, hidden)
+	args = append(args, storeID)
 
 	_, err := s.DB.Query(query, args...)
 	if err != nil {
