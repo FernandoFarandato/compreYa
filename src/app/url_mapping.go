@@ -18,5 +18,6 @@ func configureURLMapping(router *gin.Engine, handlers *dependencies.HandlerConta
 
 	storeGroup := router.Group("compreYa/store", handlers.AuthValidation.Handle)
 	storeGroup.POST("/create", handlers.CreateStore.Handle)
+	storeGroup.POST("/delete/:url_name", handlers.DeleteStore.Handle)
 	storeGroup.GET("/validate/name", handlers.SignUp.Handle)
 }

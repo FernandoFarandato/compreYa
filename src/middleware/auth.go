@@ -32,7 +32,7 @@ func (middleware *Validation) handle(c *gin.Context) *errors.ApiError {
 
 	isAuthorize, err := middleware.validateToken(c, token)
 	if !isAuthorize {
-		errors.NewNotAuthorizeError(nil, "User is not authenticated")
+		return errors.NewNotAuthorizeError(nil, "User is not authenticated")
 	}
 
 	return nil
