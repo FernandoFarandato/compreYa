@@ -8,4 +8,5 @@ const (
 	DataBaseError         = "Error in database"
 	SendingEmailError     = "Error sending email"
 	CreatingEmailError    = "Error creating email"
+	StoreNotFound         = "Store not found"
 )

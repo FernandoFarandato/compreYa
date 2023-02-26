@@ -63,3 +63,11 @@ func NewNotAuthorizeError(causes []string, messages ...string) *ApiError {
 	}
 	return newApiError(http.StatusUnauthorized, message, "bad_request", causes)
 }
+
+func NewResourceNotFoundError(causes []string, messages ...string) *ApiError {
+	message := ResourceNotFoundMessage
+	if len(messages) > 0 {
+		message = strings.Join(messages, " - ")
+	}
+	return newApiError(http.StatusNotFound, message, "not_found", causes)
+}

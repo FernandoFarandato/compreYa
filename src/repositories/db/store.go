@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"compreYa/src/core/entities"
 	"compreYa/src/core/errors"
 	"database/sql"
 	"github.com/gin-gonic/gin"
@@ -33,12 +34,11 @@ func (s *Store) CreateStore(c *gin.Context, name, urlName string, ownerID int64)
 	return nil
 }
 
-func (s *Store) GetStoreData(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+func (s *Store) DeleteStore(c *gin.Context, storeID, ownerID int64) *errors.ApiError {
+	const query = "DELETE FROM store WHERE id = ? AND owner_id = ?"
 
 	var args []interface{}
-	args = append(args, name)
-	args = append(args, urlName)
+	args = append(args, storeID)
 	args = append(args, ownerID)
 
 	_, err := s.DB.Query(query, args...)
@@ -51,6 +51,31 @@ func (s *Store) GetStoreData(c *gin.Context, name, urlName string, ownerID int64
 	}
 
 	return nil
+}
+
+func (s *Store) GetStoreData(c *gin.Context, urlName string) (*entities.Store, *errors.ApiError) {
+	const query = "SELECT id, name, url_name, owner_id FROM store WHERE url_name = ?"
+
+	var store = &entities.Store{}
+
+	var args []interface{}
+	args = append(args, urlName)
+
+	rows, err := s.DB.Query(query, args...)
+	if err != nil {
+		return nil, errors.NewInternalServerError(nil, errors.DataBaseError)
+	}
+
+	rows.Next()
+	err = rows.Scan(&store.ID, &store.Name, &store.URLName, &store.OwnerID)
+	if err != nil {
+		if strings.Contains(err.Error(), "Rows are closed") {
+			return nil, errors.NewResourceNotFoundError(nil, errors.StoreNotFound)
+		}
+		return nil, errors.NewInternalServerError(nil, errors.DataBaseError)
+	}
+
+	return store, nil
 }
 
 func (s *Store) GetUserStores(c *gin.Context, ownerID int64) (int64, *errors.ApiError) {
@@ -75,7 +100,7 @@ func (s *Store) GetUserStores(c *gin.Context, ownerID int64) (int64, *errors.Api
 }
 
 func (s *Store) ValidateStoreName(c *gin.Context, name string) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+	const query = "INSERT INTO store (name, url_name, owner_id) VALUES (?, ?, ?)"
 
 	var args []interface{}
 	args = append(args, name)
@@ -93,7 +118,7 @@ func (s *Store) ValidateStoreName(c *gin.Context, name string) *errors.ApiError 
 }
 
 func (s *Store) ValidateStoreURLName(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+	const query = "INSERT INTO store (name, url_name, owner_id) VALUES (?, ?, ?)"
 
 	var args []interface{}
 	args = append(args, name)
@@ -113,7 +138,7 @@ func (s *Store) ValidateStoreURLName(c *gin.Context, name, urlName string, owner
 }
 
 func (s *Store) HideStore(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+	const query = "INSERT INTO store (name, url_name, owner_id) VALUES (?, ?, ?)"
 
 	var args []interface{}
 	args = append(args, name)
@@ -133,7 +158,7 @@ func (s *Store) HideStore(c *gin.Context, name, urlName string, ownerID int64) *
 }
 
 func (s *Store) ShowStore(c *gin.Context, name, urlName string, ownerID int64) *errors.ApiError {
-	const query = "INSERT INTO store (name, urlName, ownerID) VALUES (?, ?, ?)"
+	const query = "INSERT INTO store (name, url_name, owner_id) VALUES (?, ?, ?)"
 
 	var args []interface{}
 	args = append(args, name)

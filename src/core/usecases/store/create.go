@@ -17,8 +17,7 @@ type CreateStoreImpl struct {
 }
 
 func (uc *CreateStoreImpl) Execute(c *gin.Context, store *entities.Store) *errors.ApiError {
-	// validate if user already has a store
-	stores, err := uc.StoreRepository.GetUserStores(c, *store.OwnerID)
+	stores, err := uc.StoreRepository.GetUserStores(c, store.OwnerID)
 	if err != nil {
 		return err
 	}
@@ -26,7 +25,7 @@ func (uc *CreateStoreImpl) Execute(c *gin.Context, store *entities.Store) *error
 		return errors.NewNotAuthorizeError(nil, "") // max amount of stores reached - another error code
 	}
 
-	err = uc.StoreRepository.CreateStore(c, store.Name, store.URLName, *store.OwnerID)
+	err = uc.StoreRepository.CreateStore(c, store.Name, store.URLName, store.OwnerID)
 	if err != nil {
 		return err
 	}

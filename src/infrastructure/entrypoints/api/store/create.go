@@ -1,4 +1,4 @@
-package auth
+package store
 
 import (
 	contracts "compreYa/src/core/contracts/store"
@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"strconv"
 )
-
-const tokenExpirationTime = 3600 * 24 * 15
 
 type CreateStore struct {
 	CreateStore usecases.CreateStore
